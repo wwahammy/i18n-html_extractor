@@ -3,6 +3,8 @@ module I18n
     class Runner
       include Cli
 
+      EXCLUDED_KEYS = ['', 'x', 'nbsp', '&times'].freeze
+
       def initialize(args = {})
         @files = file_list_from_pattern(args[:file_pattern])
         @locale = args[:locale].presence
@@ -27,8 +29,11 @@ module I18n
       def run
         each_translation do |file, document, node|
           puts "Found \"#{node.text}\" in #{file}:#{node.text}".green
-          node.replace_text!
-          document.save!(file)
+
+          if skip_node?(node)
+            node.replace_text!
+            document.save!(file)
+          end
 
           add_translation! I18n.default_locale, node.key, node.text
         end
@@ -41,6 +46,10 @@ module I18n
       end
 
       private
+
+      def skip_node?(node)
+        !EXCLUDED_KEYS.include?(node.key)
+      end
 
       def file_list_from_pattern(pattern)
         if pattern.present?
