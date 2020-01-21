@@ -88,10 +88,10 @@ module I18n
       end
 
       def each_translation
-        @files.each do |file|
+        @files.lazy.each do |file|
           document = I18n::HTMLExtractor::ErbDocument.parse file
           nodes_to_translate = extract_all_nodes_to_translate(document)
-          nodes_to_translate.each { |node| yield(file, document, node) }
+          nodes_to_translate.lazy.each { |node| yield(file, document, node) }
         end
       end
 
