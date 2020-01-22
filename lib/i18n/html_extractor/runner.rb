@@ -3,7 +3,7 @@ module I18n
     class Runner
       include Cli
 
-      EXCLUDED_KEYS = ['', 'x', 'nbsp', '&times'].freeze
+      EXCLUDED_KEYS = ['', 'x', 'nbsp', '&times;'].freeze
 
       def initialize(args = {})
         @files = file_list_from_pattern(args[:file_pattern])
