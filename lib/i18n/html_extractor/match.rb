@@ -15,7 +15,9 @@ module I18n
         end
 
         def matches
-          erb_nodes(document) + plain_text_nodes(document) + form_fields(document)
+          [:erb_nodes, :plain_text_nodes, :form_fields].map do |method_to_call|
+            Thread.new { send(method_to_call, document) }
+          end.map(&:value).flatten
         end
 
         private
@@ -27,7 +29,7 @@ module I18n
         end
 
         def plain_text_nodes(document)
-          leaf_nodes.map! { |node| PlainTextMatch.create(document, node) }.flatten.compact
+          leaf_nodes(document).map! { |node| PlainTextMatch.create(document, node) }.flatten.compact
         end
 
         def form_fields(document)
@@ -38,8 +40,8 @@ module I18n
           end.flatten.compact
         end
 
-        def leaf_nodes
-          @leaf_nodes ||= document.css('*:not(:has(*))').select { |n| n.text.present? }
+        def leaf_nodes(document)
+          document.css('*:not(:has(*))').select { |n| n.text.present? }
         end
       end
     end
