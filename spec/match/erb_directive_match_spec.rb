@@ -6,7 +6,7 @@ describe I18n::HTMLExtractor::Match::ErbDirectiveMatch do
   subject { described_class.create(document, fragment) }
 
   context 'when parsing link_to' do
-    let(:erb_string) { '<%= link_to "Hello", some_url, title: \'Some title\' %>' }
+    let(:erb_string) { %Q(<%= link_to "Hello", some_url, title: "Some title" %>) }
 
     it 'extracts both text and title' do
       expect(subject).to be_a(Array)
@@ -14,7 +14,8 @@ describe I18n::HTMLExtractor::Match::ErbDirectiveMatch do
       expect(subject.count).to eq(2)
       subject.map(&:replace_text!)
       expect(document.erb_directives[fragment]).to eq(
-        " link_to t('.hello'), some_url, title: t('.some_title') ")
+        %Q(link_to t(".hello"), some_url, title: t(".some_title"))
+      )
     end
   end
 
@@ -27,7 +28,8 @@ describe I18n::HTMLExtractor::Match::ErbDirectiveMatch do
       expect(subject.count).to eq(1)
       subject.map(&:replace_text!)
       expect(document.erb_directives[fragment]).to eq(
-        ' some.email_field :email, placeholder: t(\'.email\'), class: "some" ')
+        %Q(some.email_field :email, placeholder: t(".email"), class: "some")
+      )
     end
   end
 
@@ -40,7 +42,8 @@ describe I18n::HTMLExtractor::Match::ErbDirectiveMatch do
       expect(subject.count).to eq(1)
       subject.map(&:replace_text!)
       expect(document.erb_directives[fragment]).to eq(
-        ' some.text_area :text, placeholder: t(\'.some_text\'), class: "some" ')
+        %Q(some.text_area :text, placeholder: t(".some_text"), class: "some")
+      )
     end
   end
 
@@ -53,7 +56,8 @@ describe I18n::HTMLExtractor::Match::ErbDirectiveMatch do
       expect(subject.count).to eq(1)
       subject.map(&:replace_text!)
       expect(document.erb_directives[fragment]).to eq(
-        ' some.label :email, t(\'.text\') ')
+        %Q(some.label :email, t(".text"))
+      )
     end
   end
 
@@ -66,7 +70,8 @@ describe I18n::HTMLExtractor::Match::ErbDirectiveMatch do
       expect(subject.count).to eq(1)
       subject.map(&:replace_text!)
       expect(document.erb_directives[fragment]).to eq(
-        ' some.submit t(\'.text\') ')
+        %Q(some.submit t(".text"))
+      )
     end
   end
 end
