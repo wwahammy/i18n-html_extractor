@@ -1,8 +1,6 @@
 module I18n
   module HTMLExtractor
     class Runner
-      include Cli
-
       EXCLUDED_KEYS = ['', 'x', 'nbsp', '&times;'].freeze
 
       def initialize(args = {})
@@ -17,8 +15,8 @@ module I18n
 
             unless skip_node?(node)
               node.replace_text!
-              add_translation! I18n.default_locale, node.key, node.text
               document.save!(file)
+              add_translation! I18n.default_locale, node.key, node.text
             end
           end
 
