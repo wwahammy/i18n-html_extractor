@@ -7,3 +7,10 @@ en:
     hi: Hi
   test:
     hi: Hi
+  test_translated:
+    hello: Hello
+    hello_title: hello-title
+    hi: Hi
+    my_input_placeholder: my input placeholder
+    my_textarea_placeholder: my textarea placeholder
+    text_within_a_span: text within a span
