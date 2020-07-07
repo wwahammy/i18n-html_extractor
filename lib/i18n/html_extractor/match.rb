@@ -1,6 +1,7 @@
 require 'i18n/html_extractor/match/node_match'
 require 'i18n/html_extractor/match/base_match'
 require 'i18n/html_extractor/match/erb_directive_match'
+require 'i18n/html_extractor/match/link_match'
 require 'i18n/html_extractor/match/placeholder_match'
 require 'i18n/html_extractor/match/plain_text_match'
 
@@ -15,12 +16,18 @@ module I18n
         end
 
         def matches
-          [:erb_nodes, :plain_text_nodes, :form_fields].map do |method_to_call|
+          [:link_nodes, :erb_nodes, :plain_text_nodes, :form_fields].map do |method_to_call|
             Thread.new { send(method_to_call, document) }
           end.map(&:value).flatten
         end
 
         private
+
+        def link_nodes(document)
+          document.erb_directives.map do |fragment_id, _|
+            LinkMatch.create(document, fragment_id)
+          end.flatten.compact
+        end
 
         def erb_nodes(document)
           document.erb_directives.map do |fragment_id, _|
