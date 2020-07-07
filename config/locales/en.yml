@@ -10,6 +10,7 @@ en:
   test_translated:
     hello: Hello
     hello_title: hello-title
+    here_i_have_a_super_cool_paragraph_with_: Here I have a super cool paragraph with an %{inline_link:inline link}. The text even carries on after - it's a miracle!!
     hi: Hi
     my_input_placeholder: my input placeholder
     my_textarea_placeholder: my textarea placeholder
