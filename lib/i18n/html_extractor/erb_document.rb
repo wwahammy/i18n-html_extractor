@@ -31,6 +31,13 @@ module I18n
         end
       end
 
+      def replace_its!(filename)
+        IO.write(filename, File.open(filename) do |f|
+            f.read.gsub(/!i!/, "i")
+          end
+        )
+      end
+
       def method_missing(name, *args, &block)
         @document.public_send(name, *args, &block) if @document.respond_to? name
       end

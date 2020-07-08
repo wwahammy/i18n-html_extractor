@@ -8,7 +8,7 @@ module I18n
         ].freeze
 
         REGEXPS = [
-            [/(?<before>.*)!@!(?<link_name>.*?)(,\s*(?<extras>.*))?!@!(?<after>.*)/m]
+            [/(?<before>.*)!@!"(?<link_name>.*?)"(,\s*(?<extras>.*))?!@!(?<after>.*)/m]
         ]
 
         attr_accessor :regexp
@@ -43,12 +43,14 @@ module I18n
 
           @key = make_key_from "#{matches[:before]} #{matches[:link_name]} #{matches[:after]}"
 
-          "#{matches[:before]}%{#{@link_name}:#{matches[:link_name]}}#{matches[:after]}"
+          "#{matches[:before]}%{#{@link_name}:#{matches[:link_name]}}#{matches[:after]}".strip
         end
 
 
         def translation_key_object
-          "it(\".#{key}\", #{link_name}: It.link(#{extras}))"
+          # Because the key adder doesn't know about it, we have to remove the i
+          # It will get replaced with a regular i after we add the key
+          "!i!t(\".#{key}\", #{link_name}: It.link(#{extras}))"
         end
 
         def replace_text!

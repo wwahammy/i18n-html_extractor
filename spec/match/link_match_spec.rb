@@ -14,7 +14,7 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
       expect(subject.count).to eq(1)
       subject.map(&:replace_text!)
       expect(document.erb_directives.values.first).to eq(
-          %Q(it(".hello", hello: It.link(some_url)))
+          %Q(!i!t(".hello", hello: It.link(some_url)))
       )
     end
   end
@@ -38,7 +38,7 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
       expect(subject.count).to eq(1)
       subject.map(&:replace_text!)
       expect(document.erb_directives.values.first).to eq(
-           %Q(it(".hello", hello: It.link(some_url, title: "Some title")))
+           %Q(!i!t(".hello", hello: It.link(some_url, title: "Some title")))
        )
     end
   end
@@ -52,7 +52,7 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
       expect(subject.count).to eq(1)
       subject.map(&:replace_text!)
       expect(document.erb_directives.values.first).to eq(
-          %Q(it(".hello", hello: It.link()))
+          %Q(!i!t(".hello", hello: It.link()))
       )
     end
   end
@@ -76,7 +76,7 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
       expect(subject.count).to eq(1)
       subject.map(&:replace_text!)
       expect(document.erb_directives.values.first).to eq(
-           %Q(it(".i_would_just_like_to_say_hello_to_you_my", hello: It.link(some_url)))
+           %Q(!i!t(".i_would_just_like_to_say_hello_to_you_my", hello: It.link(some_url)))
        )
     end
   end
@@ -90,7 +90,7 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
       expect(subject.count).to eq(1)
       subject.map(&:replace_text!)
       expect(document.erb_directives.values.first).to eq(
-           %Q(it(".i_would_just_like_to_say_hello_to_you_my", hello: It.link(some_url, class: "my-cool-link")))
+           %Q(!i!t(".i_would_just_like_to_say_hello_to_you_my", hello: It.link(some_url, class: "my-cool-link")))
        )
     end
   end
@@ -109,7 +109,7 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
       expect(subject.count).to eq(1)
       subject.map(&:replace_text!)
       expect(document.erb_directives.values.first).to eq(
-          %Q(it(".here_i_have_a_super_cool_paragraph_with_", inline_link: It.link("www.example.com", class: "my-cool-link")))
+          %Q(!i!t(".here_i_have_a_super_cool_paragraph_with_", inline_link: It.link("www.example.com", class: "my-cool-link")))
       )
     end
   end
