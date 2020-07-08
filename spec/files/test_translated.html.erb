@@ -3,10 +3,9 @@
   <%= link_to t('.hi'), title: t(".hello_title") %>
 </div>
 
-<%= link_to t(".hello") %>
+<% #currently we don't support links outside of an enclosing tag= link_to "Hello" %>
 <textarea placeholder="<%= t(".my_textarea_placeholder") %>"></textarea>
 <input placeholder="<%= t(".my_input_placeholder") %>">
 <span><%= t(".text_within_a_span") %></span>
-<p>
-  <%= it ".here_i_have_a_super_cool_paragraph_with_", inline_link: It.link("www.example.com", class: "my-cool-link") %>
-</p>
+
+<p><%= it ".here_i_have_a_super_cool_paragraph_with_", inline_link: It.link("www.example.com", class: "my-cool-link") %></p>

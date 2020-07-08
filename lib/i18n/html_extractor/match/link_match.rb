@@ -8,26 +8,29 @@ module I18n
         ].freeze
 
         REGEXPS = [
-            [/(?<before>.*)!@!(?<link_name>.*?)(,\s*(?<extras>.*))?!@!(?<after>.*)/]
+            [/(?<before>.*)!@!(?<link_name>.*?)(,\s*(?<extras>.*))?!@!(?<after>.*)/m]
         ]
 
+        attr_accessor :regexp
         attr_accessor :link_name
         attr_accessor :extras
 
         def self.create(document, node)
           REGEXPS.map do |r|
-            match = node.text.match(r[0])
+            regexp = r[0]
+            match = node.text.match(regexp)
 
             if match.nil?
               nil
             else
               puts "matched: #{node.text}"
-              new document, node, match.named_captures.symbolize_keys
+              new document, node, match.named_captures.symbolize_keys, regexp
             end
           end
         end
 
-        def initialize(document, node, matches)
+        def initialize(document, node, matches, regexp)
+          @regexp = regexp
           text = parameterise_string(matches)
           # When we call new here to create a Match, we need to pass the whole text that key will translate to.
           # That will include the interpolations, e.g. %{link:My cool link}
@@ -51,7 +54,7 @@ module I18n
         def replace_text!
           key = SecureRandom.uuid
           document.erb_directives[key] = translation_key_object
-          node.content = node.content.gsub(text, "@@=#{key}@@") # This will be replaced with <%= translation_key_object => at the end when saving the file
+          node.content = node.content.gsub(regexp, "@@=#{key}@@") # This will be replaced with <%= translation_key_object => at the end when saving the file
         end
       end
     end

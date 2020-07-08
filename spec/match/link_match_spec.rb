@@ -70,7 +70,7 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
   context 'when parsing link_to in the middle of a tag' do
     let(:erb_string) { %Q(<p>I would just like to say <%= link_to "Hello", some_url %> to you my friend!</p>) }
 
-    it 'extracts surrounding into a link' do
+    it 'extracts surrounding and the link' do
       expect(subject).to be_a(Array)
       subject.compact!
       expect(subject.count).to eq(1)
@@ -84,7 +84,7 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
   context 'when parsing link_to in the middle of a tag with extra attributes' do
     let(:erb_string) { %Q(<p>I would just like to say <%= link_to "Hello", some_url, class: "my-cool-link" %> to you my friend!</p>) }
 
-    it 'extracts surrounding into a link' do
+    it 'extracts surrounding and the link' do
       expect(subject).to be_a(Array)
       subject.compact!
       expect(subject.count).to eq(1)
@@ -92,6 +92,25 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
       expect(document.erb_directives.values.first).to eq(
            %Q(it(".i_would_just_like_to_say_hello_to_you_my", hello: It.link(some_url, class: "my-cool-link")))
        )
+    end
+  end
+
+  context 'when parsing link_to in a tag that has newlines' do
+    let(:erb_string) { %Q(
+    <p>
+        Here I have a super cool paragraph with an <%= link_to "inline link", "www.example.com", class: "my-cool-link" %>.\n
+        The text even carries on after - it's a miracle!!
+    </p>
+    ) }
+
+    it 'extracts surrounding and the link' do
+      expect(subject).to be_a(Array)
+      subject.compact!
+      expect(subject.count).to eq(1)
+      subject.map(&:replace_text!)
+      expect(document.erb_directives.values.first).to eq(
+          %Q(it(".here_i_have_a_super_cool_paragraph_with_", inline_link: It.link("www.example.com", class: "my-cool-link")))
+      )
     end
   end
 end
