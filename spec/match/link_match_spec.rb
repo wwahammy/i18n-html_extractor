@@ -32,7 +32,7 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
     #    )
     # end
 
-    it 'extracts only text' do
+    it 'extracts only text and ignores title' do
       expect(subject).to be_a(Array)
       subject.compact!
       expect(subject.count).to eq(1)
@@ -40,6 +40,16 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
       expect(document.erb_directives.values.first).to eq(
            %Q(it(".hello", hello: It.link(some_url, title: "Some title")))
        )
+    end
+  end
+
+  context 'when parsing a node without a link' do
+    let(:erb_string) { "<p>\n  Some Text\n  </p>" }
+
+    it 'returns nil' do
+      expect(subject).to be_a(Array)
+      subject.compact!
+      expect(subject.count).to eq(0)
     end
   end
 

@@ -16,10 +16,14 @@ module I18n
 
         def self.create(document, node)
           REGEXPS.map do |r|
-            puts node.text
             match = node.text.match(r[0])
 
-            new document, node, match.named_captures.symbolize_keys
+            if match.nil?
+              nil
+            else
+              puts "matched: #{node.text}"
+              new document, node, match.named_captures.symbolize_keys
+            end
           end
         end
 

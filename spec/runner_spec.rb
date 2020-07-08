@@ -21,6 +21,8 @@ describe I18n::HTMLExtractor::Runner do
         expect(translations["hi"]).to eq "Hi"
         expect(translations["my_textarea_placeholder"]).to eq "my textarea placeholder"
         expect(translations["my_input_placeholder"]).to eq "my input placeholder"
+        expect(translations["here_i_have_a_super_cool_paragraph_with_"]).to eq "Here I have a super cool paragraph with an %{inline_link:inline link}.
+  The text even carries on after - it's a miracle!!"
       end
     end
 
