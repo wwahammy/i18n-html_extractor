@@ -2,19 +2,71 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
   let(:document) do
     I18n::HTMLExtractor::ErbDocument.parse_string(erb_string)
   end
-  let(:fragment) { document.erb_directives.keys.first }
-  subject { described_class.create(document, fragment) }
+  let(:node) { document.xpath('./p').first }
+  subject { described_class.create(document, node) }
 
-  context 'when parsing link_to' do
-    let(:erb_string) { %Q(<%= link_to "Hello", some_url, title: "Some title" %>) }
+  context 'when parsing a link_to on its own' do
+    let(:erb_string) { %Q(<p><%= link_to "Hello", some_url %></p>) }
 
-    it 'extracts both text and title' do
+    it 'still use it' do
       expect(subject).to be_a(Array)
       subject.compact!
-      expect(subject.count).to eq(2)
+      expect(subject.count).to eq(1)
       subject.map(&:replace_text!)
-      expect(document.erb_directives[fragment]).to eq(
-           %Q(link_to t(".hello"), some_url, title: t(".some_title"))
+      expect(document.erb_directives.values.first).to eq(
+          %Q(it(".hello", hello: It.link(some_url)))
+      )
+    end
+  end
+
+  context 'when parsing link_to with a title' do
+    let(:erb_string) { %Q(<p><%= link_to "Hello", some_url, title: "Some title" %></p>) }
+
+    # it 'extracts both text and title' do
+    #   expect(subject).to be_a(Array)
+    #   subject.compact!
+    #   expect(subject.count).to eq(2)
+    #   subject.map(&:replace_text!)
+    #   expect(document.erb_directives.values.first).to eq(
+    #        %Q(link_to t(".hello"), some_url, title: t(".some_title"))
+    #    )
+    # end
+
+    it 'extracts only text' do
+      expect(subject).to be_a(Array)
+      subject.compact!
+      expect(subject.count).to eq(1)
+      subject.map(&:replace_text!)
+      expect(document.erb_directives.values.first).to eq(
+           %Q(it(".hello", hello: It.link(some_url, title: "Some title")))
+       )
+    end
+  end
+
+  context 'when parsing link_to in the middle of a tag' do
+    let(:erb_string) { %Q(<p>I would just like to say <%= link_to "Hello", some_url %> to you my friend!</p>) }
+
+    it 'extracts surrounding into a link' do
+      expect(subject).to be_a(Array)
+      subject.compact!
+      expect(subject.count).to eq(1)
+      subject.map(&:replace_text!)
+      expect(document.erb_directives.values.first).to eq(
+           %Q(it(".i_would_just_like_to_say_hello_to_you_my", hello: It.link(some_url)))
+       )
+    end
+  end
+
+  context 'when parsing link_to in the middle of a tag with extra attributes' do
+    let(:erb_string) { %Q(<p>I would just like to say <%= link_to "Hello", some_url, class: "my-cool-link" %> to you my friend!</p>) }
+
+    it 'extracts surrounding into a link' do
+      expect(subject).to be_a(Array)
+      subject.compact!
+      expect(subject.count).to eq(1)
+      subject.map(&:replace_text!)
+      expect(document.erb_directives.values.first).to eq(
+           %Q(it(".i_would_just_like_to_say_hello_to_you_my", hello: It.link(some_url, class: "my-cool-link")))
        )
     end
   end

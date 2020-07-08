@@ -3,6 +3,10 @@ require 'nokogiri'
 module I18n
   module HTMLExtractor
     class ErbDocument
+      INLINE_ERB_REGEXPS = [
+        I18n::HTMLExtractor::TwoWayRegexp.new(/<%= link_to (?<inner_text>.+?) %>/m, /!@!(?<inner_text>[a-z0-9\-]+)!@!/m)
+      ].freeze
+
       ERB_REGEXPS = [
         I18n::HTMLExtractor::TwoWayRegexp.new(/<%= (?<inner_text>.+?) %>/m, /@@=(?<inner_text>[a-z0-9\-]+)@@/m),
         I18n::HTMLExtractor::TwoWayRegexp.new(/<% #(?<inner_text>.+?) %>/m, /@@#(?<inner_text>[a-z0-9\-]+)@@/m),
@@ -41,7 +45,8 @@ module I18n
         end
 
         def parse_string(string, verbose: false)
-          erb_directives = extract_erb_directives! string
+          extract_inline_erb_directives! INLINE_ERB_REGEXPS, string
+          erb_directives = extract_erb_directives! ERB_REGEXPS, string
           document = create_document(string)
           log_errors(document.errors, string) if verbose
           ErbDocument.new(document, erb_directives)
@@ -66,10 +71,18 @@ module I18n
           end
         end
 
-        def extract_erb_directives!(text)
+        def extract_inline_erb_directives!(regexps, text)
+          regexps.each do |regexp|
+            regexp.replace!(text) do |string_format, data|
+              string_format % { inner_text: data[:inner_text] }
+            end
+          end
+        end
+
+        def extract_erb_directives!(regexps, text)
           erb_directives = {}
 
-          ERB_REGEXPS.each do |regexp|
+          regexps.each do |regexp|
             regexp.replace!(text) do |string_format, data|
               key = SecureRandom.uuid
               erb_directives[key] = data[:inner_text]

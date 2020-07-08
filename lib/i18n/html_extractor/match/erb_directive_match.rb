@@ -20,12 +20,8 @@ module I18n
           document.erb_directives[@fragment_id].gsub!(@regexp[0], @regexp[1] % translation_key_object)
         end
 
-        def self.regex
-          REGEXPS
-        end
-
         def self.create(document, fragment_id)
-          regex.map do |r|
+          REGEXPS.map do |r|
             match = document.erb_directives[fragment_id].match(r[0])
             new(document, fragment_id, match[r[2]][1...-1], r) if match && match[r[2]]
           end

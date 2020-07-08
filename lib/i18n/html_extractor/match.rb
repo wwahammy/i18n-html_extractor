@@ -24,9 +24,7 @@ module I18n
         private
 
         def link_nodes(document)
-          document.erb_directives.map do |fragment_id, _|
-            LinkMatch.create(document, fragment_id)
-          end.flatten.compact
+          leaf_nodes(document).map! { |node| LinkMatch.create(document, node) }.flatten.compact
         end
 
         def erb_nodes(document)
