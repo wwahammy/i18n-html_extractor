@@ -8,7 +8,7 @@ module I18n
         ].freeze
 
         REGEXPS = [
-            [/(?<before>.*)!@!(?<link_name>.*?),\s*(?<extras>.*)!@!(?<after>.*)/]
+            [/(?<before>.*)!@!(?<link_name>.*?)(,\s*(?<extras>.*))?!@!(?<after>.*)/]
         ]
 
         attr_accessor :link_name

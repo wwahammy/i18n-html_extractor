@@ -43,6 +43,20 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
     end
   end
 
+  context 'when parsing a link that only has one parameter' do
+    let(:erb_string) { %Q(<p><%= link_to "Hello" %></p>) }
+
+    it 'extracts the text' do
+      expect(subject).to be_a(Array)
+      subject.compact!
+      expect(subject.count).to eq(1)
+      subject.map(&:replace_text!)
+      expect(document.erb_directives.values.first).to eq(
+          %Q(it(".hello", hello: It.link()))
+      )
+    end
+  end
+
   context 'when parsing a node without a link' do
     let(:erb_string) { "<p>\n  Some Text\n  </p>" }
 
