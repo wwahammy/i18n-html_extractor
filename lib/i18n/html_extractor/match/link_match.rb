@@ -1,3 +1,5 @@
+require 'parser/current'
+
 module I18n
   module HTMLExtractor
     module Match
@@ -8,14 +10,16 @@ module I18n
         ].freeze
 
         REGEXPS = [
-            [/(?<before>.*)!@!"(?<link_name>.*?)"(,\s*(?<extras>.*))?!@!(?<after>.*)/m]
-        ]
+            [/(?<before>.*)!@!=link_to (?<link_name>.*?)(,\s*(?<extras>.*))?!@!(?<after>.*)/m]
+        ].freeze
+
+        REGEXP_INNER = /(?<before>.*)!@!=(?<inner>.*?)!@!(?<after>.*)/m
 
         attr_accessor :regexp
         attr_accessor :link_name
         attr_accessor :extras
 
-        def self.create(document, node)
+        def self.__create(document, node)
           REGEXPS.map do |r|
             regexp = r[0]
             match = node.text.match(regexp)
@@ -26,6 +30,32 @@ module I18n
               puts "matched: #{node.text}"
               new document, node, match.named_captures.symbolize_keys, regexp
             end
+          end
+        end
+
+        def self.create(document, node)
+          match = node.text.match REGEXP_INNER
+
+          return [nil] if match.nil? # we probs want to return nil rather than an array of nil, this is just to pass current tests
+
+          inner = match.named_captures["inner"]
+          parsed = Parser::CurrentRuby.parse inner
+          _, value, arg = parsed.to_a
+
+          # ignore if we're not a method
+          return [nil] unless parsed.type == :send
+          if value == :link_to
+            puts parsed
+            if arg.type == :str
+              __create document, node # use the old method for now
+            else
+              replace_node_text! document, node, /!@!.*!@!/, inner
+              return [nil]
+            end
+          elsif value == :t || value == :translate || value == :it
+            return [nil] # is this what we want to do here
+          else
+            return [nil]
           end
         end
 
@@ -46,17 +76,20 @@ module I18n
           "#{matches[:before]}%{#{@link_name}:#{matches[:link_name]}}#{matches[:after]}".strip
         end
 
-
         def translation_key_object
-          # Because the key adder doesn't know about it, we have to remove the i
-          # It will get replaced with a regular i after we add the key
+          # Because the key adder doesn't know about `it`, we have to remove the i
+          # The !i! will get replaced with a regular i after we add the key, returning the method to `it`
           "!i!t(\".#{key}\", #{link_name}: It.link(#{extras}))"
         end
 
-        def replace_text!
+        def self.replace_node_text!(document, node, regexp, inner)
           key = SecureRandom.uuid
-          document.erb_directives[key] = translation_key_object
-          node.content = node.content.gsub(regexp, "@@=#{key}@@") # This will be replaced with <%= translation_key_object => at the end when saving the file
+          document.erb_directives[key] = inner
+          node.content = node.content.gsub(regexp, "@@=#{key}@@") # This will be replaced with <%= inner => at the end when saving the file
+        end
+
+        def replace_text!
+          LinkMatch.replace_node_text! document, node, regexp, translation_key_object
         end
       end
     end

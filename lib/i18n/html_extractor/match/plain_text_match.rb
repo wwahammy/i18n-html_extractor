@@ -4,7 +4,7 @@ module I18n
       class PlainTextMatch < BaseMatch
         def self.create(document, node)
           return nil if node.name.start_with?('script')
-          return nil if node.text.match(/!@!/)
+          return nil if node.text.match(/!@!=/)
           node.text.split(/\@\@(=?)[a-z0-9\-]+\@\@/).map! do |text|
             new(document, node, text.strip) unless text.blank?
           end

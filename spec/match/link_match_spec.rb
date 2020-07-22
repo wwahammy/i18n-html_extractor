@@ -113,4 +113,20 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
       )
     end
   end
+
+  context 'when parsing a link_to that already has a t() tag as its name' do
+    let(:erb_string) { %Q(<p><%= link_to t('.cool_link_name'), some_url %></p>) }
+
+    it 'leaves link as is' do
+      puts node
+      expect(subject).to be_a(Array)
+      subject.compact!
+      expect(subject.count).to eq(1)
+      subject.map(&:replace_text!)
+      expect(document.erb_directives.values.first).to eq(
+          %Q(link_to t('.cool_link_name'), some_url)
+      )
+      puts node
+    end
+  end
 end

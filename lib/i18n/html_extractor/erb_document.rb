@@ -4,7 +4,7 @@ module I18n
   module HTMLExtractor
     class ErbDocument
       INLINE_ERB_REGEXPS = [
-        I18n::HTMLExtractor::TwoWayRegexp.new(/<%= link_to (?<inner_text>.+?) %>/m, /!@!(?<inner_text>[a-z0-9\-]+)!@!/m)
+        I18n::HTMLExtractor::TwoWayRegexp.new(/<%= link_to (?<inner_text>.+?) %>/m, /!@!=link_to (?<inner_text>[a-z0-9\-]+)!@!/m)
       ].freeze
 
       ERB_REGEXPS = [

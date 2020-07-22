@@ -50,7 +50,7 @@ describe I18n::HTMLExtractor::Match::PlainTextMatch do
   end
 
   context 'when parsing plain text that contains a link directive' do
-    let(:erb_string) { '<div>Some Text !@!link_to "Hello"!@!</div>' }
+    let(:erb_string) { '<div>Some Text !@!= link_to "Hello"!@!</div>' }
 
     it 'ignores match and leaves it for the link matcher' do
       expect(subject).to be_nil
