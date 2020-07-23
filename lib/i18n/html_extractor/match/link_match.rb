@@ -16,10 +16,11 @@ module I18n
         REGEXP_INNER = /(?<before>.*)!@!=(?<inner>.*?)!@!(?<after>.*)/m
 
         attr_accessor :regexp
+        attr_accessor :original_link_name
         attr_accessor :link_name
         attr_accessor :extras
 
-        def self.__create(document, node)
+        def self.create_link(document, node, type)
           REGEXPS.map do |r|
             regexp = r[0]
             match = node.text.match(regexp)
@@ -28,7 +29,7 @@ module I18n
               nil
             else
               puts "matched: #{node.text}"
-              new document, node, match.named_captures.symbolize_keys, regexp
+              type.new document, node, match.named_captures.symbolize_keys, regexp
             end
           end
         end
@@ -42,21 +43,30 @@ module I18n
           parsed = Parser::CurrentRuby.parse inner
           _, value, arg = parsed.to_a
 
-          # ignore if we're not a method
+          # ignore if we're not a method or variable
           return [nil] unless parsed.type == :send
           if value == :link_to
             puts parsed
-            if arg.type == :str
-              __create document, node # use the old method for now
+            if arg.type == :send
+              _, name_value = arg.to_a
+              if ignore? name_value
+                replace_node_text! document, node, /!@!.*!@!/, inner
+                return [nil]
+              else
+                create_link document, node, PlainLinkMatch
+              end
             else
-              replace_node_text! document, node, /!@!.*!@!/, inner
-              return [nil]
+              create_link document, node, LinkMatch
             end
-          elsif value == :t || value == :translate || value == :it
+          elsif ignore? value
             return [nil] # is this what we want to do here
           else
             return [nil]
           end
+        end
+
+        def self.ignore?(value)
+          value == :t || value == :translate || value == :it
         end
 
         def initialize(document, node, matches, regexp)
@@ -68,12 +78,13 @@ module I18n
         end
 
         def parameterise_string(matches)
-          @link_name = make_key_from matches[:link_name]
+          @original_link_name = matches[:link_name]
+          @link_name = make_key_from original_link_name
           @extras = matches[:extras]
 
-          @key = make_key_from "#{matches[:before]} #{matches[:link_name]} #{matches[:after]}"
+          @key = make_key_from "#{matches[:before]} #{original_link_name} #{matches[:after]}"
 
-          "#{matches[:before]}%{#{@link_name}:#{matches[:link_name]}}#{matches[:after]}".strip
+          "#{matches[:before]}%{#{@link_name}:#{original_link_name}}#{matches[:after]}".strip
         end
 
         def translation_key_object
@@ -90,6 +101,19 @@ module I18n
 
         def replace_text!
           LinkMatch.replace_node_text! document, node, regexp, translation_key_object
+        end
+      end
+
+      class PlainLinkMatch < LinkMatch
+        def parameterise_string(matches)
+          super matches
+          "#{matches[:before]}%{#{link_name}}#{matches[:after]}".strip
+        end
+
+        def translation_key_object
+          link_params = original_link_name
+          link_params = "#{link_params}, #{extras}" if extras.present?
+          "raw t(\".#{key}\", #{link_name}: link_to(#{link_params}))"
         end
       end
     end

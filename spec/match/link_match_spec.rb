@@ -118,15 +118,23 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
     let(:erb_string) { %Q(<p><%= link_to t('.cool_link_name'), some_url %></p>) }
 
     it 'leaves link as is' do
-      puts node
+      expect(subject).to be_a(Array)
+      subject.compact!
+      expect(subject.count).to eq(0)
+    end
+  end
+
+  context 'when parsing a link_to that has a variable or method call for its name' do
+    let(:erb_string) { %Q(<p>Hey there, <%= link_to current_user.name, some_url, class: "my-cool-link" %>. Welcome to the site!</p>) }
+
+    it 'leaves link as is' do
       expect(subject).to be_a(Array)
       subject.compact!
       expect(subject.count).to eq(1)
       subject.map(&:replace_text!)
       expect(document.erb_directives.values.first).to eq(
-          %Q(link_to t('.cool_link_name'), some_url)
+        %Q(raw t(".hey_there_current_user_name_welcome_to_t", current_user_name: link_to(current_user.name, some_url, class: "my-cool-link")))
       )
-      puts node
     end
   end
 end

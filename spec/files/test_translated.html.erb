@@ -6,6 +6,9 @@
 <p>
   <%= link_to t('.yooo'), my_cool_link %>
 </p>
+<div>
+  <%= t(".hey_there_current_user_name_welcome", current_user_name: link_to(current_user.name, user_home, class: "highlight")) %>
+</div>
 
 <% #currently we don't support links outside of an enclosing tag= link_to "Hello" %>
 <textarea placeholder="<%= t(".my_textarea_placeholder") %>"></textarea>
