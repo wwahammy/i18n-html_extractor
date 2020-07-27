@@ -13,6 +13,7 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
       subject.compact!
       expect(subject.count).to eq(1)
       subject.map(&:replace_text!)
+      expect(document.erb_directives.count).to eq(1)
       expect(document.erb_directives.values.first).to eq(
           %Q(!i!t(".hello", hello: It.link(some_url)))
       )
@@ -37,6 +38,7 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
       subject.compact!
       expect(subject.count).to eq(1)
       subject.map(&:replace_text!)
+      expect(document.erb_directives.count).to eq(1)
       expect(document.erb_directives.values.first).to eq(
            %Q(!i!t(".hello", hello: It.link(some_url, title: "Some title")))
        )
@@ -51,6 +53,7 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
       subject.compact!
       expect(subject.count).to eq(1)
       subject.map(&:replace_text!)
+      expect(document.erb_directives.count).to eq(1)
       expect(document.erb_directives.values.first).to eq(
           %Q(!i!t(".hello", hello: It.link()))
       )
@@ -75,6 +78,7 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
       subject.compact!
       expect(subject.count).to eq(1)
       subject.map(&:replace_text!)
+      expect(document.erb_directives.count).to eq(1)
       expect(document.erb_directives.values.first).to eq(
            %Q(!i!t(".i_would_just_like_to_say_hello_to_you_my", hello: It.link(some_url)))
        )
@@ -89,6 +93,7 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
       subject.compact!
       expect(subject.count).to eq(1)
       subject.map(&:replace_text!)
+      expect(document.erb_directives.count).to eq(1)
       expect(document.erb_directives.values.first).to eq(
            %Q(!i!t(".i_would_just_like_to_say_hello_to_you_my", hello: It.link(some_url, class: "my-cool-link")))
        )
@@ -108,6 +113,7 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
       subject.compact!
       expect(subject.count).to eq(1)
       subject.map(&:replace_text!)
+      expect(document.erb_directives.count).to eq(1)
       expect(document.erb_directives.values.first).to eq(
           %Q(!i!t(".here_i_have_a_super_cool_paragraph_with_", inline_link: It.link("www.example.com", class: "my-cool-link")))
       )
@@ -121,6 +127,10 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
       expect(subject).to be_a(Array)
       subject.compact!
       expect(subject.count).to eq(0)
+      expect(document.erb_directives.count).to eq(1)
+      expect(document.erb_directives.values.first).to eq(
+          %Q(link_to t('.cool_link_name'), some_url)
+      )
     end
   end
 
@@ -132,8 +142,47 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
       subject.compact!
       expect(subject.count).to eq(1)
       subject.map(&:replace_text!)
+      expect(document.erb_directives.count).to eq(1)
       expect(document.erb_directives.values.first).to eq(
         %Q(raw t(".hey_there_current_user_name_welcome_to_t", current_user_name: link_to(current_user.name, some_url, class: "my-cool-link")))
+      )
+    end
+  end
+
+  context 'when parsing link_to in the middle of a tag that has erb comments' do
+
+    let(:erb_string) { %Q(<p>I would just like to say <%= link_to "Hello", some_url, class: "my-cool-link" %> to you my friend! <% #my cool comment %></p>) }
+
+    it 'extracts surrounding and the link, leaving the comment' do
+      puts document.xpath('./p')
+      expect(subject).to be_a(Array)
+      subject.compact!
+      expect(subject.count).to eq(1)
+      subject.map(&:replace_text!)
+      expect(document.erb_directives.count).to eq(2)
+      expect(document.erb_directives.values.first).to eq(
+          %Q(my cool comment)
+      )
+      expect(document.erb_directives.values.second).to eq(
+          %Q(!i!t(".i_would_just_like_to_say_hello_to_you_my", hello: It.link(some_url, class: "my-cool-link")))
+      )
+    end
+  end
+
+  context 'when parsing a link_to that has a variable or method call for its name and erb comments' do
+    let(:erb_string) { %Q(<p>Hey there, <%= link_to current_user.name, some_url, class: "my-cool-link" %>. Welcome to the site! <% #my cool comment %></p>) }
+
+    it 'leaves link as is' do
+      expect(subject).to be_a(Array)
+      subject.compact!
+      expect(subject.count).to eq(1)
+      subject.map(&:replace_text!)
+      expect(document.erb_directives.count).to eq(2)
+      expect(document.erb_directives.values.first).to eq(
+          %Q(my cool comment)
+      )
+      expect(document.erb_directives.values.second).to eq(
+          %Q(raw t(".hey_there_current_user_name_welcome_to_t", current_user_name: link_to(current_user.name, some_url, class: "my-cool-link")))
       )
     end
   end

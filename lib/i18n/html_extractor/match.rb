@@ -16,7 +16,7 @@ module I18n
         end
 
         def matches
-          [:link_nodes, :erb_nodes, :plain_text_nodes, :form_fields].map do |method_to_call|
+          %i[link_nodes erb_nodes plain_text_nodes form_fields].map do |method_to_call|
             send(method_to_call, document)
           end.flatten
         end

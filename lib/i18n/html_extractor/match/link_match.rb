@@ -34,6 +34,9 @@ module I18n
           end
         end
 
+        # to match comments and other @@ tags, we should split those and have those as separate erb nodes (because they are)
+        # otherwise when we come to substitute at the end we'll either handle the link block wrong or the other tags wrong
+        # do we???????????
         def self.create(document, node)
           match = node.text.match REGEXP_INNER
 
@@ -45,8 +48,8 @@ module I18n
 
           # ignore if we're not a method or variable
           return [nil] unless parsed.type == :send
+
           if value == :link_to
-            puts parsed
             if arg.type == :send
               _, name_value = arg.to_a
               if ignore? name_value
