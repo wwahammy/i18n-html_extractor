@@ -46,26 +46,23 @@ module I18n
           parsed = Parser::CurrentRuby.parse inner
           _, value, arg = parsed.to_a
 
-          # ignore if we're not a method or variable
-          return [nil] unless parsed.type == :send
+          # ignore if we're not a link
+          return [nil] unless parsed&.type == :send && value == :link_to
 
-          if value == :link_to
-            if arg.type == :send
-              _, name_value = arg.to_a
-              if ignore? name_value
-                replace_node_text! document, node, /!@!.*!@!/, inner
-                return [nil]
-              else
-                create_link document, node, PlainLinkMatch
-              end
+          link = [nil]
+
+          if arg.type == :send
+            _, name_value = arg.to_a
+            if ignore? name_value
+              replace_node_text! document, node, /!@!.*!@!/, inner
             else
-              create_link document, node, LinkMatch
+              link = create_link document, node, PlainLinkMatch
             end
-          elsif ignore? value
-            return [nil] # is this what we want to do here
           else
-            return [nil]
+            link = create_link document, node, LinkMatch
           end
+
+          link
         end
 
         def self.ignore?(value)
