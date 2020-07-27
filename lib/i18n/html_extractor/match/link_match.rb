@@ -9,30 +9,13 @@ module I18n
             [/^([ \t]*link_to (.*),[ ]?title:[ ]?)(("[^"]+")|('[^']+'))/, '\1%s', 3],
         ].freeze
 
-        REGEXPS = [
-            [/(?<before>.*)!@!=link_to (?<link_name>.*?)(,\s*(?<extras>.*))?!@!(?<after>.*)/m]
-        ].freeze
+        REGEXP = /(?<before>.*)!@!=link_to (?<link_name>.*?)(,\s*(?<extras>.*))?!@!(?<after>.*)/m
 
         REGEXP_INNER = /(?<before>.*)!@!=(?<inner>.*?)!@!(?<after>.*)/m
 
         attr_accessor :regexp
-        attr_accessor :original_link_name
-        attr_accessor :link_name
-        attr_accessor :extras
-
-        def self.create_link(document, node, type)
-          REGEXPS.map do |r|
-            regexp = r[0]
-            match = node.text.match(regexp)
-
-            if match.nil?
-              nil
-            else
-              puts "matched: #{node.text}"
-              type.new document, node, match.named_captures.symbolize_keys, regexp
-            end
-          end
-        end
+        attr_accessor :key
+        attr_accessor :links
 
         # to match comments and other @@ tags, we should split those and have those as separate erb nodes (because they are)
         # otherwise when we come to substitute at the end we'll either handle the link block wrong or the other tags wrong
@@ -69,28 +52,73 @@ module I18n
           value == :t || value == :translate || value == :it
         end
 
-        def initialize(document, node, matches, regexp)
+        def self.create_link(document, node, type)
+          match = find_match node.text
+          return [ nil ] if match.nil?
+
+          content = match_to_a match
+
+          # check to see if we have more
+          while (before = find_match match[:before]).present?
+            content = match_to_a(before).concat(content)
+            match = before
+          end
+
+          [ type.new(document, node, content, REGEXP) ]
+        end
+
+        def self.find_match(text)
+          match = text.match(REGEXP)
+          return nil if match.nil?
+          puts "matched: #{text}"
+          return match.named_captures.symbolize_keys
+        end
+
+        def self.match_to_a(match)
+          [ match[:before], { name: match[:link_name], extras: match[:extras] }, match[:after] ]
+        end
+
+        def initialize(document, node, content, regexp)
           @regexp = regexp
-          text = parameterise_string(matches)
+          text = parameterise_string(content)
           # When we call new here to create a Match, we need to pass the whole text that key will translate to.
           # That will include the interpolations, e.g. %{link:My cool link}
           super document, node, text
         end
 
-        def parameterise_string(matches)
-          @original_link_name = matches[:link_name]
-          @link_name = make_key_from original_link_name
-          @extras = matches[:extras]
+        def parameterise_string(content)
+          @links = []
+          @key = ""
+          parameterised = ""
+          content.each do |c|
+            if c.is_a? String
+              @key << "#{c} "
+              parameterised << c
+            else
+              @key << c[:name]
+              link_name_key = make_key_from c[:name]
+              parameterised << "%{#{link_name_key}:#{c[:name]}}"
+              c[:name_key] = link_name_key
+              @links << c
+            end
+          end
 
-          @key = make_key_from "#{matches[:before]} #{original_link_name} #{matches[:after]}"
+          @key = make_key_from @key
 
-          "#{matches[:before]}%{#{@link_name}:#{original_link_name}}#{matches[:after]}".strip
+          parameterised
         end
 
         def translation_key_object
           # Because the key adder doesn't know about `it`, we have to remove the i
           # The !i! will get replaced with a regular i after we add the key, returning the method to `it`
-          "!i!t(\".#{key}\", #{link_name}: It.link(#{extras}))"
+          puts "key: #{key}"
+          t = "!i!t(\".#{key}\""
+          puts "links: #{links.inspect}"
+          links.each do |link|
+            puts link
+            t << ", #{link[:name_key]}: It.link(#{link[:extras]})"
+          end
+          t << ")"
         end
 
         def self.replace_node_text!(document, node, regexp, inner)
@@ -105,15 +133,15 @@ module I18n
       end
 
       class PlainLinkMatch < LinkMatch
-        def parameterise_string(matches)
-          super matches
-          "#{matches[:before]}%{#{link_name}}#{matches[:after]}".strip
+        def parameterise_string(content)
+          super content
+          "#{content.first}%{#{content.second[:name_key]}}#{content.third}".strip
         end
 
         def translation_key_object
-          link_params = original_link_name
-          link_params = "#{link_params}, #{extras}" if extras.present?
-          "raw t(\".#{key}\", #{link_name}: link_to(#{link_params}))"
+          link_params = links.first[:name]
+          link_params = "#{link_params}, #{links.first[:extras]}" if links.first[:extras].present?
+          "raw t(\".#{key}\", #{links.first[:name_key]}: link_to(#{link_params}))"
         end
       end
     end
