@@ -123,7 +123,7 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
   context 'when parsing multiple link_tos in a tag' do
     let(:erb_string) { %Q(<p>I would just like to say <%= link_to "Hello", some_url, class: "my-cool-link" %> to you my <%= link_to "friend", friend_url %>! You're just <%= link_to "great", "great.com" %></p>) }
 
-    it 'extracts surrounding and both the links' do
+    it 'extracts surrounding and all the links' do
       expect(subject).to be_a(Array)
       subject.compact!
       expect(subject.count).to eq(1)
@@ -131,6 +131,21 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
       expect(document.erb_directives.count).to eq(1)
       expect(document.erb_directives.values.first).to eq(
           %Q(!i!t(".i_would_just_like_to_say_hello_to_you_my", hello: It.link(some_url, class: "my-cool-link"), friend: It.link(friend_url), great: It.link("great.com")))
+      )
+    end
+  end
+
+  context 'when parsing multiple link_tos in a tag, including one with a variable/method for the link' do
+    let(:erb_string) { %Q(<p>I would just like to say <%= link_to "Hello", some_url, class: "my-cool-link" %> to you my <%= link_to current_user.friend, friend_url, class: "cool" %>! You're just <%= link_to "great", "great.com" %></p>) }
+
+    it 'keep it all in one it node, but add a raw link' do
+      expect(subject).to be_a(Array)
+      subject.compact!
+      expect(subject.count).to eq(1)
+      subject.map(&:replace_text!)
+      expect(document.erb_directives.count).to eq(1)
+      expect(document.erb_directives.values.first).to eq(
+        %Q(raw !i!t(".i_would_just_like_to_say_hello_to_you_my", hello: It.link(some_url, class: "my-cool-link"), current_user_friend: link_to(current_user.friend, friend_url, class: "cool"), great: It.link("great.com")))
       )
     end
   end

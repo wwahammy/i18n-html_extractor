@@ -16,21 +16,15 @@ module I18n
         attr_accessor :regexp
         attr_accessor :key
         attr_accessor :links
+        attr_accessor :raw
 
         # to match comments and other @@ tags, we should split those and have those as separate erb nodes (because they are)
         # otherwise when we come to substitute at the end we'll either handle the link block wrong or the other tags wrong
         # do we???????????
         def self.create(document, node)
-          match = node.text.match REGEXP_INNER
-
-          return [nil] if match.nil? # we probs want to return nil rather than an array of nil, this is just to pass current tests
-
-          inner = match.named_captures["inner"]
-          parsed = Parser::CurrentRuby.parse inner
-          _, value, arg = parsed.to_a
-
           # ignore if we're not a link
-          return [nil] unless parsed&.type == :send && value == :link_to
+          is_link, inner, arg = is_link? node.text
+          return [nil] unless is_link
 
           link = [nil]
 
@@ -46,6 +40,17 @@ module I18n
           end
 
           link
+        end
+
+        def self.is_link?(text)
+          match = text.match REGEXP_INNER
+          return false if match.nil?
+
+          inner = match.named_captures["inner"]
+          parsed = Parser::CurrentRuby.parse inner
+          _, value, arg = parsed.to_a
+
+          return (parsed&.type == :send && value == :link_to), inner, arg
         end
 
         def self.ignore?(value)
@@ -71,11 +76,14 @@ module I18n
           match = text.match(REGEXP)
           return nil if match.nil?
           puts "matched: #{text}"
-          return match.named_captures.symbolize_keys
+          captures = match.named_captures.symbolize_keys
+          is_link, _, arg = is_link? text
+          captures[:it_link] = is_link && arg.type != :send
+          captures
         end
 
         def self.match_to_a(match)
-          [ match[:before], { name: match[:link_name], extras: match[:extras] }, match[:after] ]
+          [ match[:before], { name: match[:link_name], extras: match[:extras], it_link: match[:it_link] }, match[:after] ]
         end
 
         def initialize(document, node, content, regexp)
@@ -100,6 +108,7 @@ module I18n
               parameterised << "%{#{link_name_key}:#{c[:name]}}"
               c[:name_key] = link_name_key
               @links << c
+              @raw = @raw || !c[:it_link]
             end
           end
 
@@ -111,12 +120,14 @@ module I18n
         def translation_key_object
           # Because the key adder doesn't know about `it`, we have to remove the i
           # The !i! will get replaced with a regular i after we add the key, returning the method to `it`
-          puts "key: #{key}"
           t = "!i!t(\".#{key}\""
-          puts "links: #{links.inspect}"
+          t = "raw " << t if raw
           links.each do |link|
-            puts link
-            t << ", #{link[:name_key]}: It.link(#{link[:extras]})"
+            if link[:it_link]
+              t << ", #{link[:name_key]}: It.link(#{link[:extras]})"
+            else
+              t << ", #{link[:name_key]}: link_to(#{link[:name]}, #{link[:extras]})"
+            end
           end
           t << ")"
         end
