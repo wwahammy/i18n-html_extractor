@@ -7,7 +7,8 @@
 </p>
 <div><%= raw t(".hey_there_current_user_name_welcome", current_user_name: link_to(current_user.name, user_home, class: "highlight")) %></div>
 
-<% #currently we don't support links outside of an enclosing tag= link_to "Hello" %>
+<% #my cool comment %>
+<%= link_to "Hello", "cool.com" %>
 <textarea placeholder="<%= t(".my_textarea_placeholder") %>"></textarea>
 <input placeholder="<%= t(".my_input_placeholder") %>">
 <span><%= t(".text_within_a_span") %></span>

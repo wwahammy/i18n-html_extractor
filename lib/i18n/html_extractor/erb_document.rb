@@ -4,7 +4,7 @@ module I18n
   module HTMLExtractor
     class ErbDocument
       INLINE_ERB_REGEXPS = [
-        I18n::HTMLExtractor::TwoWayRegexp.new(/<%= link_to (?<inner_text>.+?) %>/m, /!@!=link_to (?<inner_text>[a-z0-9\-]+)!@!/m)
+        I18n::HTMLExtractor::TwoWayRegexp.new(/<%= link_to (?<inner_text>.+?) %>/m, /!@!=link_to (?<inner_text>.+)!@!/m)
       ].freeze
 
       ERB_REGEXPS = [
@@ -25,6 +25,13 @@ module I18n
           ERB_REGEXPS.each do |regexp|
             regexp.inverse_replace!(result) do |string_format, data|
               string_format % { inner_text: erb_directives[data[:inner_text]] }
+            end
+          end
+
+          # deal with any leftover inline links, i.e. ones not in blocks
+          INLINE_ERB_REGEXPS.each do |regexp|
+            regexp.inverse_replace!(result) do |string_format, data|
+              string_format % { inner_text: data[:inner_text] }
             end
           end
           f.write result
