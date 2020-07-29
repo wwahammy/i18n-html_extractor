@@ -3,9 +3,15 @@ require 'nokogiri'
 module I18n
   module HTMLExtractor
     class ErbDocument
+      INLINE_ERB_REGEXPS = [
+        I18n::HTMLExtractor::TwoWayRegexp.new(/<%= link_to (?<inner_text>.+?) %>/m, /!@!=link_to (?<inner_text>.+)!@!/m)
+      ].freeze
+
       ERB_REGEXPS = [
         I18n::HTMLExtractor::TwoWayRegexp.new(/<%= (?<inner_text>.+?) %>/m, /@@=(?<inner_text>[a-z0-9\-]+)@@/m),
         I18n::HTMLExtractor::TwoWayRegexp.new(/<% #(?<inner_text>.+?) %>/m, /@@#(?<inner_text>[a-z0-9\-]+)@@/m),
+        I18n::HTMLExtractor::TwoWayRegexp.new(/<%#(?<inner_text>.+?) %>/m, /@@#(?<inner_text>[a-z0-9\-]+)@@/m),
+        I18n::HTMLExtractor::TwoWayRegexp.new(/<%- (?<inner_text>.+?) %>/m, /@@-(?<inner_text>[a-z0-9\-]+)@@/m),
         I18n::HTMLExtractor::TwoWayRegexp.new(/<% (?<inner_text>.+?) %>/m, /@@(?<inner_text>[a-z0-9\-]+)@@/m)
       ].freeze
 
@@ -23,8 +29,22 @@ module I18n
               string_format % { inner_text: erb_directives[data[:inner_text]] }
             end
           end
+
+          # deal with any leftover inline links, i.e. ones not in blocks
+          INLINE_ERB_REGEXPS.each do |regexp|
+            regexp.inverse_replace!(result) do |string_format, data|
+              string_format % { inner_text: data[:inner_text] }
+            end
+          end
           f.write result
         end
+      end
+
+      def replace_its!(filename)
+        IO.write(filename, File.open(filename) do |f|
+            f.read.gsub(/!i!/, "i")
+          end
+        )
       end
 
       def method_missing(name, *args, &block)
@@ -41,7 +61,8 @@ module I18n
         end
 
         def parse_string(string, verbose: false)
-          erb_directives = extract_erb_directives! string
+          extract_inline_erb_directives! INLINE_ERB_REGEXPS, string
+          erb_directives = extract_erb_directives! ERB_REGEXPS, string
           document = create_document(string)
           log_errors(document.errors, string) if verbose
           ErbDocument.new(document, erb_directives)
@@ -66,10 +87,18 @@ module I18n
           end
         end
 
-        def extract_erb_directives!(text)
+        def extract_inline_erb_directives!(regexps, text)
+          regexps.each do |regexp|
+            regexp.replace!(text) do |string_format, data|
+              string_format % { inner_text: data[:inner_text] }
+            end
+          end
+        end
+
+        def extract_erb_directives!(regexps, text)
           erb_directives = {}
 
-          ERB_REGEXPS.each do |regexp|
+          regexps.each do |regexp|
             regexp.replace!(text) do |string_format, data|
               key = SecureRandom.uuid
               erb_directives[key] = data[:inner_text]

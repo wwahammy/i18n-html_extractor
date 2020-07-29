@@ -20,7 +20,11 @@ module I18n
         attr_writer :key
 
         def key
-          @key ||= text.parameterize.underscore.slice(0..39)
+          @key ||= make_key_from(text)
+        end
+
+        def make_key_from(string)
+          string.parameterize.underscore.slice(0..39)
         end
       end
     end

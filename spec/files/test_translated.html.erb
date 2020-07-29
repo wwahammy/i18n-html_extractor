@@ -1,9 +1,19 @@
 <div>
   <%= t(".hello") %>
-  <%= link_to t('.hi'), title: t(".hello_title") %>
+  <%= link_to t('.hi'), my_cool_link %>
 </div>
+<p>
+  <%= link_to t('.yooo'), my_cool_link %>
+</p>
+<div><%= raw t(".hey_there_current_user_name_welcome", current_user_name: link_to(current_user.name, user_home, class: "highlight")) %></div>
 
-<%= link_to t(".hello") %>
+<% #my cool comment %>
+<%= link_to "Hello", "cool.com" %>
+<% # my other cool comment %>
 <textarea placeholder="<%= t(".my_textarea_placeholder") %>"></textarea>
 <input placeholder="<%= t(".my_input_placeholder") %>">
 <span><%= t(".text_within_a_span") %></span>
+
+<%- "hyphen blocks!" %>
+
+<p><%= it(".here_i_have_a_super_cool_paragraph_with_", inline_link: It.link("www.example.com", class: "my-cool-link")) %></p>

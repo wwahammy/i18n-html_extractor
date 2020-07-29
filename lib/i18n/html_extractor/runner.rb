@@ -15,11 +15,12 @@ module I18n
 
             unless skip_node?(node)
               node.replace_text!
-              document.save!(file)
-              add_translation! I18n.default_locale, node.key, node.text
+              document.save!(file) # pretty sure saving the WHOLE file for each node is part of what's causing the slowdown
+              add_translation! I18n.default_locale, node.key, node.text.squish # remove newlines to stop the weird block literal stuff
             end
           end
 
+          document.replace_its!(file)
         end
       end
 

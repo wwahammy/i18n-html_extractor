@@ -32,6 +32,8 @@ DESCRIPTION
   s.add_dependency('i18n-tasks')
   s.add_dependency('activesupport', '~> 5.0')
   s.add_dependency('railties', '~> 5.0')
+  s.add_dependency('it')
+  s.add_dependency('parser')
 
   # s.add_development_dependency('vcr')
   s.add_development_dependency('pry')

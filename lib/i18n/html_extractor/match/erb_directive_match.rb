@@ -3,8 +3,7 @@ module I18n
     module Match
       class ErbDirectiveMatch < NodeMatch
         REGEXPS = [
-          [/^([ \t]*link_to )(("[^"]+")|('[^']+'))/, '\1%s', 2],
-          [/^([ \t]*link_to (.*),[ ]?title:[ ]?)(("[^"]+")|('[^']+'))/, '\1%s', 3],
+          # | regex for the tag | defines the replacement - grab the second capture group, which contains the whole string bar the text to replace, and then interpolate the t(key) object in | which element in the match contains the string to extract
           [/^([ \t]*[a-z_]+\.[a-z_]+_field (.*),[ ]?placeholder:[ ]?)(("[^"]+")|('[^']+'))/, '\1%s', 3],
           [/^([ \t]*[a-z_]+\.text_area (.*),[ ]?placeholder:[ ]?)(("[^"]+")|('[^']+'))/, '\1%s', 3],
           [/^([ \t]*[a-z_]+\.submit )(("[^"]+")|('[^']+'))/, '\1%s', 2],

@@ -24,17 +24,5 @@ gem 'i18n-html_extractor', github: 'ProGM/i18n-html_extractor'
 
 It scans all your HTML templates for strings and moves them to locales file.
 
-It's made of three rake tasks:
-
-### List-only Mode
-
-Running `rake i18n:extract_html:list`, you'll get a report of all files that contains strings that should be translated.
-
-### Automatic Mode
-
 Running `rake i18n:extract_html:auto`, all strings are moved to i18n locale file of your default language.
-
-### Interactive Mode
-
-Running `rake i18n:extract_html:interactive`, you can decide, for every string, which one to move to translation, and it's translation for every language.
 
