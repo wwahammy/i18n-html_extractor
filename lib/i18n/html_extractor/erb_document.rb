@@ -11,6 +11,7 @@ module I18n
         I18n::HTMLExtractor::TwoWayRegexp.new(/<%= (?<inner_text>.+?) %>/m, /@@=(?<inner_text>[a-z0-9\-]+)@@/m),
         I18n::HTMLExtractor::TwoWayRegexp.new(/<% #(?<inner_text>.+?) %>/m, /@@#(?<inner_text>[a-z0-9\-]+)@@/m),
         I18n::HTMLExtractor::TwoWayRegexp.new(/<%#(?<inner_text>.+?) %>/m, /@@#(?<inner_text>[a-z0-9\-]+)@@/m),
+        I18n::HTMLExtractor::TwoWayRegexp.new(/<%- (?<inner_text>.+?) %>/m, /@@-(?<inner_text>[a-z0-9\-]+)@@/m),
         I18n::HTMLExtractor::TwoWayRegexp.new(/<% (?<inner_text>.+?) %>/m, /@@(?<inner_text>[a-z0-9\-]+)@@/m)
       ].freeze
 
