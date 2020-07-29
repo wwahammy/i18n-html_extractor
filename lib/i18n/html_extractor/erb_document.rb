@@ -4,7 +4,8 @@ module I18n
   module HTMLExtractor
     class ErbDocument
       INLINE_ERB_REGEXPS = [
-        I18n::HTMLExtractor::TwoWayRegexp.new(/<%= link_to (?<inner_text>.+?) %>/m, /!@!=link_to (?<inner_text>.+)!@!/m)
+          #                                        The mental thing is to exclude any strings with the term 'do' so we exclude blocks
+        I18n::HTMLExtractor::TwoWayRegexp.new(/<%= link_to (?<inner_text>(?:(?!\bdo\b).)*?) %>/m, /!@!=link_to (?<inner_text>.+)!@!/m)
       ].freeze
 
       ERB_REGEXPS = [

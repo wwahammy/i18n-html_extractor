@@ -4,10 +4,6 @@ module I18n
   module HTMLExtractor
     module Match
       class LinkMatch < BaseMatch
-        ORIGINAL_LINK_REGEXPS = [
-            [/^([ \t]*link_to )(("[^"]+")|('[^']+'))/, '\1%s', 2],
-            [/^([ \t]*link_to (.*),[ ]?title:[ ]?)(("[^"]+")|('[^']+'))/, '\1%s', 3],
-        ].freeze
 
         REGEXP = /(?<before>.*)!@!=link_to (?<link_name>.*?)(,\s*(?<extras>.*))?!@!(?<after>.*)/m
 
@@ -18,9 +14,6 @@ module I18n
         attr_accessor :links
         attr_accessor :raw
 
-        # to match comments and other @@ tags, we should split those and have those as separate erb nodes (because they are)
-        # otherwise when we come to substitute at the end we'll either handle the link block wrong or the other tags wrong
-        # do we???????????
         def self.create(document, node)
           # ignore if we're not a link
           is_link, inner, arg = is_link? node.text
