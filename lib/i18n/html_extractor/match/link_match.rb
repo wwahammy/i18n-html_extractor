@@ -83,7 +83,7 @@ module I18n
         end
 
         def self.match_to_a(match)
-          [ match[:before], { name: match[:link_name], extras: match[:extras], it_link: match[:it_link] }, match[:after] ]
+          [ match[:before], { name: match[:link_name].gsub(/["']/, ""), extras: match[:extras], it_link: match[:it_link] }, match[:after] ]
         end
 
         def initialize(document, node, content, regexp)
