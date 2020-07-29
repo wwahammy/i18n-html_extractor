@@ -1,23 +1,14 @@
-[![Build Status](https://travis-ci.org/ProGM/i18n-html_extractor.svg?branch=master)](https://travis-ci.org/ProGM/i18n-html_extractor)
-
 I18n HTML Extractor
 ---------------
 
-A set of rake tasks to extract strings from html templates into locale files.
-
-
 # Introduction
 
-I created this gem to resolve a practical problem: I had to deal with a big Rails project that had no i18n locales at all.
-
-It's not yet 100% functional, but I'd like to improve it.
+Fork of a fork of a repo. I've improved to use the `it` gem for interpolated links and fix a few other bugs. Please note there are certain cases that are ignored/break as they were irrelevant to my context but needed for a "complete" feature set.
 
 # Installation
 
-It's not yet published as a gem, since it's not ready, but you can start use it by adding it to you Gemfile:
-
 ```ruby
-gem 'i18n-html_extractor', github: 'ProGM/i18n-html_extractor'
+gem 'i18n-html_extractor', github: 'UsAndRufus/i18n-html_extractor'
 ```
 
 # How it works
