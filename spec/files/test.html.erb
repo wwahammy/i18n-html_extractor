@@ -26,3 +26,7 @@
 <%= link_to root_path do %>
   <%= image_tag "app_logo_and_name2.svg", class: "img-fluid" %>
 <% end %>
+
+<div>
+  Hey there, <%= current_user.name %>! We can't wait to interpolate you.
+</div>
