@@ -4,6 +4,7 @@ require 'i18n/html_extractor/match/erb_directive_match'
 require 'i18n/html_extractor/match/link_match'
 require 'i18n/html_extractor/match/placeholder_match'
 require 'i18n/html_extractor/match/plain_text_match'
+require 'i18n/html_extractor/match/interpolated_plain_text_match'
 
 module I18n
   module HTMLExtractor
@@ -16,7 +17,8 @@ module I18n
         end
 
         def matches
-          %i[link_nodes erb_nodes plain_text_nodes form_fields].map do |method_to_call|
+          # These need to be done in order - don't try and parallelise
+          %i[link_nodes interpolable_plain_text_fields erb_nodes plain_text_nodes form_fields].map do |method_to_call|
             send(method_to_call, document)
           end.flatten
         end
@@ -25,6 +27,10 @@ module I18n
 
         def link_nodes(document)
           leaf_nodes(document).map! { |node| LinkMatch.create(document, node) }.flatten.compact
+        end
+
+        def interpolable_plain_text_fields(document)
+          leaf_nodes(document).map! { |node| InterpolatedPlainTextMatch.create(document, node) }.flatten.compact
         end
 
         def erb_nodes(document)
