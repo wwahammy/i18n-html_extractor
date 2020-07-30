@@ -13,6 +13,7 @@ module I18n
 
         def initialize(document, node)
           text = parameterise_string document, node.text
+          node.content = text
           # When we call new here to create a Match, we need to pass the whole text that key will translate to.
           # That will include the interpolations, e.g. %{current_user_name}
           super document, node, text

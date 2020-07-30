@@ -18,19 +18,19 @@ module I18n
 
         def matches
           # These need to be done in order - don't try and parallelise
-          %i[link_nodes interpolable_plain_text_fields erb_nodes plain_text_nodes form_fields].map do |method_to_call|
+          %i[interpolable_plain_text_fields link_nodes erb_nodes plain_text_nodes form_fields].map do |method_to_call|
             send(method_to_call, document)
           end.flatten
         end
 
         private
 
-        def link_nodes(document)
-          leaf_nodes(document).map! { |node| LinkMatch.create(document, node) }.flatten.compact
-        end
-
         def interpolable_plain_text_fields(document)
           leaf_nodes(document).map! { |node| InterpolatedPlainTextMatch.create(document, node) }.flatten.compact
+        end
+
+        def link_nodes(document)
+          leaf_nodes(document).map! { |node| LinkMatch.create(document, node) }.flatten.compact
         end
 
         def erb_nodes(document)

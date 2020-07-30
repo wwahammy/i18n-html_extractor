@@ -7,11 +7,14 @@ en:
     hi: Hi
   test:
     hi: Hi
+    yooo: YO
   test_translated:
     hello: Hello
     hello_title: hello-title
     here_i_have_a_super_cool_paragraph_with_: Here I have a super cool paragraph with an %{inline_link:inline link}. The text even carries on after - it's a miracle!!
     hi: Hi
+    yooo: YO
     my_input_placeholder: my input placeholder
     my_textarea_placeholder: my textarea placeholder
     text_within_a_span: text within a span
+    hey_there_current_user_name_we_can_t_wai: Hey there, %{current_user_name}! We can't wait to interpolate you.
