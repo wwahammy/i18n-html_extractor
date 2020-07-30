@@ -21,13 +21,16 @@ module I18n
 
         # handle the individual case first, then we can handle the multiple case
         def parameterise_string(document, text)
-          match = text.match(INTERPOLABLE_DIRECTIVE_MATCH)
+          # create an enumerator to allow us to get all matches
+          matches = text.to_enum(:scan, INTERPOLABLE_DIRECTIVE_MATCH).map { Regexp.last_match }
 
           @directives = {}
-          directive = document.erb_directives.delete(match[:inner])
-          key = make_key_from directive
-          @directives[key] = directive
-          text.gsub! match.to_s, "%{#{key}}"
+          matches.map do |match|
+            directive = document.erb_directives.delete(match[:inner])
+            key = make_key_from directive
+            @directives[key] = directive
+            text.gsub! match.to_s, "%{#{key}}"
+          end
 
           text.strip
         end
