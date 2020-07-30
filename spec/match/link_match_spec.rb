@@ -179,6 +179,20 @@ describe I18n::HTMLExtractor::Match::LinkMatch do
     end
   end
 
+  context 'when parsing a link with an image tag for the content' do
+    let(:erb_string) { %Q(<p><%= link_to image_tag("home_menu_app.png", :class => "home-option-image"), "http://www.google.com" %></p>) }
+
+    it 'leaves link as is' do
+      expect(subject).to be_a(Array)
+      subject.compact!
+      expect(subject.count).to(eq(1), subject.inspect)
+      expect(document.erb_directives.count).to eq(1)
+      expect(document.erb_directives.values.first).to eq(
+          %Q(link_to image_tag("home_menu_app.png", :class => "home-option-image"), "http://www.google.com")
+      )
+    end
+  end
+
   context 'when parsing link_to in the middle of a tag that has erb comments' do
 
     let(:erb_string) { %Q(<p>I would just like to say <%= link_to "Hello", some_url, class: "my-cool-link" %> to you my friend! <% #my cool comment %></p>) }
