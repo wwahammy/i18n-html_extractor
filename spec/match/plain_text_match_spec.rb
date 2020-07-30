@@ -56,4 +56,22 @@ describe I18n::HTMLExtractor::Match::PlainTextMatch do
       expect(subject).to be_nil
     end
   end
+
+  context 'when parsing text that contains an interpolable erb directive' do
+    let(:erb_string) { %Q(<div>
+  Hey there, <%= current_user.name %>! We can't wait to interpolate you.
+</div>
+ )}
+    it 'successfully combines the strings either side and interpolates the directives' do
+      puts document.inspect
+      expect(subject).to be_a(Array)
+      subject.compact!
+      expect(subject.count).to eq(1)
+      subject.map(&:replace_text!)
+      expect(document.erb_directives.count).to eq(1)
+      expect(document.erb_directives.values.first).to eq(
+          %Q(t(".hey_there_current_user_name_we_can_t_wai", current_user_name: current_user.name))
+      )
+    end
+  end
 end
