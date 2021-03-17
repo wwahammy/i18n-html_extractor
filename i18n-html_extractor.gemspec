@@ -30,8 +30,8 @@ DESCRIPTION
   s.add_dependency('colored')
   s.add_dependency('rake')
   s.add_dependency('i18n-tasks')
-  s.add_dependency('activesupport', '~> 5.0')
-  s.add_dependency('railties', '~> 5.0')
+  s.add_dependency('activesupport')
+  s.add_dependency('railties')
   s.add_dependency('it')
   s.add_dependency('parser')
 
